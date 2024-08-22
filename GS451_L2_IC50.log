@@ -1,0 +1,30 @@
+PLINK v1.90b7.3 64-bit (4 Aug 2024)
+Options in effect:
+  --adjust
+  --bfile /mnt/d/GWAS/GWAS_workshop/genotypes
+  --linear
+  --maf 0.05
+  --out /mnt/d/GWAS/GWAS_workshop/GS451_L2_IC50
+  --pheno /mnt/d/GWAS/GWAS_workshop/GS451_IC50_log2.txt
+  --pheno-name log2_GS451_IC50
+
+Hostname: BELINDA
+Working directory: /mnt/d/GWAS/GWAS_workshop
+Start time: Wed Aug 21 15:07:08 2024
+
+Random number seed: 1724252828
+7852 MB RAM detected; reserving 3926 MB for main workspace.
+256896 variants loaded from .bim file.
+176 people (96 males, 80 females) loaded from .fam.
+175 phenotype values present after --pheno.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 176 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.921467.
+2473 variants removed due to minor allele threshold(s)
+(--maf/--max-maf/--mac/--max-mac).
+254423 variants and 176 people pass filters and QC.
+Phenotype data is quantitative.
+Error: Failed to open /mnt/d/GWAS/GWAS_workshop/GS451_L2_IC50.assoc.linear.
+
+End time: Wed Aug 21 15:07:09 2024

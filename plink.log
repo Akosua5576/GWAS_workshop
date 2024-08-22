@@ -1,0 +1,23 @@
+PLINK v1.90b7.3 64-bit (4 Aug 2024)
+Options in effect:
+  --bfile genotypes
+  --recode A
+  --snp rs7257475
+
+Hostname: BELINDA
+Working directory: /mnt/d/GWAS/GWAS_workshop
+Start time: Wed Aug 21 15:16:59 2024
+
+Random number seed: 1724253419
+7852 MB RAM detected; reserving 3926 MB for main workspace.
+1 out of 256896 variants loaded from .bim file.
+176 people (96 males, 80 females) loaded from .fam.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 176 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+Total genotyping rate is 0.505682.
+1 variant and 176 people pass filters and QC.
+Note: No phenotypes present.
+--recode A to plink.raw ... done.
+
+End time: Wed Aug 21 15:17:00 2024

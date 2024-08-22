@@ -1,5 +1,6 @@
 ---
 title: "GWAS Problem Set"
+Author: ""Heather E. Wheeler"
 output: html_document
 ---
 ###R Markdown Tips

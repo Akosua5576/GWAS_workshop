@@ -1,0 +1,222 @@
+---
+title: "GWAS Analysis of CB1908 IC<sub>50</sub> in Yoruba Population"
+author: "Belinda Akosua Ofosu"
+date: "`r Sys.Date()`"
+output: html_document
+
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+###Problem Set
+
+All required data files are located in the GWAS_workshop.zip folder available at <https://github.com/hwheeler01/GWAS_workshop/blob/master/GWAS_workshop.zip>
+
+
+CB1908 is a new chemotherapeutic agent developed by CubbyBear PharmaCorp.  Perform a GWAS on the IC<sub>50</sub> of CB1908-treated lymphoblastoid cell lines from the same Yoruba population used in the GWAS workshop (`genotype.*` files).  The phenotypes are located in `CB1908_IC50.txt` Answer the following questions about your analysis and embed relevant code and plots using R Markdown:
+
+
+# 1.  Is the CB1908 IC<sub>50</sub> phenotype normally distributed?  Did you adjust the phenotype prior to running your analysis?
+
+
+```{r}
+
+# Load the phenotype data
+cb1908 <- read.table("D:/GWAS/GWAS_workshop/CB1908_IC50.txt", header = TRUE)
+head(cb1908)
+
+
+# Perform Shapiro-Wilk test for normality
+shapiro.test(cb1908$CB1908_IC50)
+```
+**For the data to be considered normally distributed, the W value should be close to 1, and the p-value should be greater than 0.05; hence the data is not normally distributed.**
+
+## Transform the phenotype (IC~50~) in R
+
+```{r}
+# Add the log2(IC50) phenotype to our data file in R
+CB1908_log2_IC50 <- log2(cb1908$CB1908_IC50)
+head(CB1908_log2_IC50)
+
+#Shapiro-Wilk test on transformed data
+
+shapiro.test(CB1908_log2_IC50)
+
+data <- cbind(cb1908 , CB1908_log2_IC50)
+
+write.table(data, 
+            file = "D:/GWAS/GWAS_workshop/CB1908_log2_IC50.txt", 
+            quote = FALSE, 
+            row.names = FALSE)
+head(data)
+
+
+
+```
+# 2.	Show the plink command you used to run your GWAS below and explain what each option within the command does.
+\ #run Plink in the Terminal\
+\ ./plink --bfile /mnt/d/GWAS/GWAS_workshop/genotypes --maf 0.05 --linear --adjust --pheno /mnt/d/GWAS/GWAS_workshop/CB1908_log2_IC50.txt --pheno-name CB1908_log2_IC50 --out /mnt/d/GWAS/GWAS_workshop/CB1908_log2_IC50_test
+
+
+\small Here is an explanation of each option used:
+
+\small `--bfile` tells plink your data files that begin with **genotypes** are in binary format
+
+\small `--maf 0.05` tells plink to include snps present in at least 5% of the population
+
+\small `--linear` tells plink to run a linear additive association test for each SNP
+
+\small `--adjust` 	tells plink to adjust the p-values for each SNP using various multiple-testing correction methods
+
+\small `--pheno` 		tells plink the phenotype is located in **CB1908_log2_IC50.txt** ; a separate phenotype file
+
+\small `--pheno-name` 	tells plink the column heading of the phenotype to use in the phenotype file (**CB1908_log2_IC50**)
+
+\small `--out` 	tells plink the text to begin each output file (**CB1908_log2_IC50_test**)
+
+
+
+This produces three output files:
+
+ \ 1. CB1908_log2_IC50_test.log \ 
+ \ 2. CB1908_log2_IC50_test.assoc.linear \ 
+ \ 3. CB1908_log2_IC50_test.assoc.linear.adjusted \
+
+
+
+# 3. Make a Q-Q plot and a Manhattan plot of your results.  Embed the plots into this document and write a figure legend that explains each plot.
+```{r, echo=FALSE}
+# Read in results sorted by CHR and BP
+data1 <- read.table("D:/GWAS/GWAS_workshop/CB1908_log2_IC50_test.assoc.linear", header = TRUE)
+
+```
+
+```{r, echo=FALSE}
+
+#source the qqman.r script
+source('D:/GWAS/GWAS_workshop/qqman.r')
+
+# Create Q-Q Plot and Manhattan Plot
+png(filename = "D:/GWAS/GWAS_workshop/CB1908_qqplot.png", res = 100)
+qq(data1$P)
+dev.off()
+
+png(filename = "D:/GWAS/GWAS_workshop/CB1908_manplot.png", res = 100)
+manhattan(data1)
+dev.off()
+```
+
+
+```{r qq-plot, echo=FALSE, fig.cap="**Figure 1: Q-Q Plot of GWAS p-values for IC<sub>50</sub> of CB1908 Drug Response**"}
+knitr::include_graphics("D:/GWAS/GWAS_workshop/CB1908_qqplot.png")
+
+```
+ \ **Figure legend for the Q-Q plot** 
+
+\small - **x-axis**: Expected -log<sub>10</sub>(p) under the null hypothesis; that is there is no association between any snps and the phenotype being studied. \
+
+\small - **y-axis**: Observed -log<sub>10</sub>(p) from GWAS 
+
+\small - **Diagonal Line**: Represents the expected distribution of -log<sub>10</sub>(p) 
+
+\small - **Points Above the Line**: Indicate observed -log<sub>10</sub>(p) 
+
+\small - **Points Along the Line**: Suggest that the observed p-values are consistent with the null hypothesis 
+
+```{r Manhattan-plot, echo=FALSE, fig.cap="**Figure 2: Manhattan Plot of GWAS p-values for IC<sub>50</sub> of CB1908 Drug Response**"}
+knitr::include_graphics("D:/GWAS/GWAS_workshop/CB1908_manplot.png")
+
+```
+\ **Figure legend for the Manhattan plot**
+
+\small - **x-axis**: Chromosome (1 through X), showing the position of each SNP along the genome
+
+\small - **y-axis**: -log<sub>10</sub>(p) of the association between each SNP and IC<sub>50</sub> 
+
+\small - **Significance Threshold Line**: A red horizontal line indicating the threshold for genome wide statistical significance
+
+\small - **Suggestive Threshold Line**: A black horizontal line indicating SNPs above this line are considered suggestive of an association but do not reach genome-wide significance.
+
+\small - **Chromosome Colors**: Alternating colors for each chromosome to help distinguish between different chromosomes and improve readability of the plot 
+
+
+# 4.	What does the Q-Q plot tell you about your data?  What potential confounders in your data should you analyze further? (Note: It is not necessary to actually perform the confounder analyses, just explain what you should further investigate.)
+
+\ The Q-Q plot shows that SNPs with expected -log<sub>10</sub>(p) ≈ 4 deviate upwards, with observed -log<sub>10</sub>(p) > 4, suggesting these SNPs may be biologically significant and that some SNPs may have stronger associations with CB1908 drug response. However, this deviation might be due to potential population stratification within the Yoruba population.
+
+\ Population stratification could lead to false positives, where observed associations are not genuinely linked to the drug response but rather reflect underlying genetic differences between subgroups within the Yoruba population.
+
+\ To address this issue, it is important to include genetic ancestry information in the analysis. Using principal components as covariates can help adjust for any subpopulation structure within the Yoruba group, reducing the risk of confounding and ensuring that the associations identified are accurate and reflective of true genetic effects related to CB1908 drug response.
+
+# 5.	Do you have any genome-wide significant hits?  How did you correct for multiple hypothesis testing?  
+\small  The `.assoc.linear.adjusted` file contains adjusted p-values for each SNP which is sorted by the most significant hits
+```{r , echo=FALSE}
+library(dplyr) #loading necessary package
+data2 <- read.table("D:/GWAS/GWAS_workshop/CB1908_log2_IC50_test.assoc.linear.adjusted", header = TRUE)
+head(data2)
+
+# checking the details of top SNP
+data3 <- read.table("D:/GWAS/GWAS_workshop/CB1908_log2_IC50_test.assoc.linear", header = TRUE)
+
+# Display the first few rows of the data to check the structure
+#head(data3)
+
+# Filter for the SNP rs10876043
+snp_info <- data3 %>% filter(SNP == "rs10876043")
+
+# View the SNP information
+print(snp_info)
+
+
+
+
+```
+
+\ The snp which is the top hit is `rs10876043` found on Chromosome 12 at the position `49190411`. 
+
+\ To correct for multiple hypothesis testing, `--adjust` option in PLINK was used. This command applies multiple-testing correction methods to the p-values obtained from the association tests. PLINK adjusts the p-values using techniques such as the Bonferroni correction (**BONF**). This was done to reduce the likelihood of false positives.
+
+
+# 6.	Is there any functional information known about your top SNPs?  Are they located in or near a gene?  How might these loci be functioning in response to CB1908?  Please use screen captures of appropriate databases or LocusZoom to highlight interesting loci.
+
+```{r Regional Plot, echo=FALSE, fig.cap="**Figure 3: Regional Association Plot for SNP rs10876043 in CB1908 Drug Response Study**"}
+knitr::include_graphics("D:/GWAS/GWAS_workshop/YRI. rs1087604.png")
+
+```
+\ This LocusZoom plot visualises the association between SNP `rs10876043` and the drug `CB1908`. The genes near `rs10876043` include **FAM186A**, **LARPP4**, **DIP2B**, **ATF1** and **TMPRSS12**. The genes are located close to the SNP which suggests that the SNP may influence their expression or their function.
+
+\ Based on the LocusZoom plot, `rs1087604` does not show an extremely strong association.
+
+
+# 7.	Make a plot and figure legend of your top hit’s genotype vs. phenotype.  Is the minor allele associated with resistance or sensitivity to Drug X?
+
+\ Make boxplot of top SNP using R
+
+\ Use Plink  to pull out the genotypes of rs10876043 in a format appropriate for R in the terminal
+
+\ ./plink --bfile genotypes --snp  rs10876043 --recode A --out rs10876043_genotypes
+
+```{r, echo=FALSE}
+
+# Make a boxplot of  SNP rs10876043
+gtp <- read.table("D:/GWAS/GWAS_workshop/rs10876043_genotypes.raw", header = TRUE)
+ptp <- read.table("D:/GWAS/GWAS_workshop/CB1908_log2_IC50.txt", header = TRUE)
+head(gtp)
+boxplot(ptp$CB1908_log2_IC50 ~ gtp$rs10876043_G, 
+        ylab = "CB1908 log2(IC50)", 
+        xlab = "rs10876043 genotype", 
+         main = "Boxplot of CB1908 log2(IC50) Across rs10876043 Genotypes")
+```
+
+\ For genotype 0, the median CB1908log2(IC<sub>50</sub>) is noticeably lower compared to genotypes 1 and 2. There is an outlier at the lower end indicating an individual with notably lower CB1908log2(IC<sub>50</sub>). The median for genotype 1 is very close to the median for genotype 2. Both are around 3.0, with genotype 2 being slightly higher.
+
+\ Individuals with 1 or 2 copies of the minor allele tend to have higher CB1908log2(IC<sub>50</sub>) values compared to those with 0 copies of the minor allele. A higher CB1908log2(IC<sub>50</sub>) means a higher concentration of the drug is needed to inhibit the biological process by 50% which is likened to **low sensitivity** or **higher resistance** to the drug. 
+
+\ In contrast, individuals without the minor allele (genotype 0) have lower CB1908log2(IC<sub>50</sub>) suggesting they are **more sensitive** to the drug.
+
+# 8.	What analyses and experiments would you do next to follow-up on your findings?
+
+\ Several statistical analysis such as ANOVA and Kruskal-Wallis Tests can be performed to determine the difference in CB1908log2(IC<sub>50</sub>) values across genotypes 0, 1 and 2 are statistically significant.
+
+\ Experimentally, cell lines that have different rs10876043 genotypes can be used to measure the drug response in a controlled laboratory setting. Also, genes expressed near `rs10876043` in cells or tissues with different genotypes can be measured. This can help identify whether `rs10876043 influences gene expression, which might contribute to differences in drug response.
